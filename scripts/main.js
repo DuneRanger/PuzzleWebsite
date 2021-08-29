@@ -43,4 +43,4 @@ newPuzzle.onclick = function() {
 
 //To update bundle.js, use this:
 //Doesn't work for some fucking weird reason
-//browserify -t brfs main.js > bundle.j
+//browserify -t brfs main.js > bundle.js
