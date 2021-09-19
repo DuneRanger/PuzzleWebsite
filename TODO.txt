@@ -1,5 +1,0 @@
-Images now load with the click of a button (literally)
-
-Now I just need to split the image into map sections and find a way to move those map sections
-    This means I need to create a certain amount of map sections, each with an unique id, which I can the reference
-        idk how P5's image split thing works, but hopefully it creates multiple images that I can then easily reference for source changes.

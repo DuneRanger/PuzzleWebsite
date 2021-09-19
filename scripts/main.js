@@ -17,7 +17,6 @@ function getRandomImage(src) {
 function resizeImage(img) {
     let test = new Image();
     test.onload = function() {
-        // console.log(this.width + "x" + this.height);
         let newW, newH;
         img.width = test.width;
         img.height = test.height;
@@ -28,8 +27,6 @@ function resizeImage(img) {
             newH = innerHeight/img.height *0.8;
             puzzle.setAttribute("height", img.height * Math.min(newW, newH));
             puzzle.setAttribute("width", img.width * Math.min(newW, newH));
-            // console.log("w, h:" + img.width*newW + "x" + img.height*newH);
-            // console.log("img:" + img.width + "x" + img.height);
         } while (img.width > innerWidth || img.height > innerHeight);
     }
     test.src = img.src;
@@ -40,7 +37,3 @@ newPuzzle.onclick = function() {
     puzzle.setAttribute('src', getRandomImage(files));
     resizeImage(puzzle);
 }
-
-//To update bundle.js, use this:
-//Doesn't work for some fucking weird reason
-//browserify -t brfs main.js > bundle.js
