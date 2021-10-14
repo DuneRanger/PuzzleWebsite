@@ -16,5 +16,6 @@ button:hover {
     background-color: rgb(231, 231, 231);
 }
 
-
-
+div {
+    padding: 5px;
+}

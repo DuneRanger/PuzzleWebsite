@@ -1,24 +1,42 @@
 let files = ["Anomaly.jpg","Arctic fox.png","Astroworld.png","Ayaka.png","Cloud beast.png","Detailed1.jpg","Detailed2.jpg","Detailed3.jpg","Fallen Titan.png","Fireflies.jpg","Forest temple.jpg","Godwhale.jpg","Goldenwalk.jpg","Jungle Harbour.jpg","life death.jpg","lonely cruise.jpg","Misty forest.jpg","Mushroom Tree.jpg","Neon Samurai.jpg","North pole.jpg","Odyssey.jpg","Paranoid.jpg","Planet V_02.jpg","Portal.jpg","Portal.png","RDR2.jpg","Relaxing life.jpg","River side.jpg","Shores of Space.jpg","Soaring Roots.jpg","Supertree city.jpg","The horsemen.png","The journey of Elaina.jpg","The Mystery.jpg","Tree of Life.jpg","Twinflame.png","Void under rule.jpg","Winter wolf.png","Winter.png","Yaksha.png"];
 let filesTEST = ["Anomaly.jpg","Astroworld.png","The horsemen.png","Godwhale.jpg"];
 let Canvas, img, failedLoad = false;
-let gridSize = 3
+let tiles = [];
+
+let slider = document.getElementById("gridSize");
+let output = document.getElementById("sliderVal");
+let gridSize = slider.value;
+output.innerHTML = "Puzzle pieces: " + slider.value**2;
+
+class imageTile {
+    constructor(src, tile_X, tile_Y, tileWidth, tileHeight) {
+        this.src = src;
+        this.width = tileWidth;
+        this.height = tileHeight;
+        this.x = tile_X;
+        this.y = tile_Y;
+    }
+    imgDraw() {
+        image(this.src, this.x, this.y, this.x + this.width, this.y + this.height, this.x, this.y, this.width, this.height)
+        rect(this.x, this.y, this.x + this.width, this.y + this.height)
+    }
+}
 
 function setup() {
     Canvas = createCanvas(innerWidth*0.8, innerHeight*0.8);
+    Canvas.parent("canvas");
     img = loadImage(getRandomImage(files));
     resizeImgCanvas(img);
     imageMode(CORNERS);
-    Canvas.parent("canvas");
+    noFill();
+    rectMode(CORNERS);
     textSize(32);
     textAlign(CENTER);
+    noLoop();
 }
 
 function draw() {
-
-}
-
-function loadImgGetPixels(origSize) {
-    // background(150)
+    background(150)
     if (failedLoad) {
         push();
         fill(0);
@@ -26,23 +44,7 @@ function loadImgGetPixels(origSize) {
         text("Failed to load image", Canvas.width/2, Canvas.height/2);
         pop();
     }
-    image(img, 0, 0, Canvas.width, Canvas.height);
-    loadPixels();
-    let pixelWidth = img.width/gridSize*8
-    let pixelHeight = img.height/gridSize*2
-    // console.log(img.height + "\n" + pixelHeight)
-    let arr = [];
-    for (let z = 0; z < gridSize; z++) {
-        let asd = []
-        for (let x = pixelHeight*z; x < pixelHeight*(z+1); x++) {
-            for (let ind = pixelWidth*0; ind < pixelWidth; ind++) pixels[ind + img.width*8*x] = z*100;
-            asd.push(x)
-        }
-        arr.push(asd)
-    }
-    console.log(arr)
-    console.log(pixels.length)
-    updatePixels();
+    else createTiles(img, gridSize)
 }
 
 function getRandomImage(src) { 
@@ -60,19 +62,40 @@ function resizeImgCanvas(img) {
     resizeCanvas(img.width, img.height);
 }
 
-function imageDivider(width, height, pixels) {
-
-}
-
-newPuzzle.onclick = function() {
+function prepareImage() {
     img = loadImage(getRandomImage(files), img => {
-        let origSize = [img.width, img.height]
         resizeImgCanvas(img);
         failedLoad = false;
-        loadImgGetPixels(origSize);
+        createTiles(img, gridSize)
     }, () => {
         failedLoad = true;
     });
+}
+
+function createTiles(img, gridSize) {
+    tiles = [];
+    let tempRow = [];
+    let tileWidth = img.width/gridSize
+    let tileHeight = img.height/gridSize
+
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+            tiles.push(new imageTile(img, x*tileWidth, y*tileHeight, tileWidth, tileHeight))
+        }
+        // tiles.push(tempRow)
+    }
+    for (i in tiles) tiles[i].imgDraw();
+}
+
+newPuzzle.onclick = function() {
+    prepareImage()
+    redraw();
+}
+
+slider.oninput = function() {
+    output.innerHTML = "Puzzle pieces: " + this.value**2;
+    gridSize = this.value;
+    redraw();
 }
 
 // fileInput.addEventListener("input", (img) => {
