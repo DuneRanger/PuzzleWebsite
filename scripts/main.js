@@ -2,6 +2,7 @@ let files = ["Anomaly.jpg","Arctic fox.png","Astroworld.png","Ayaka.png","Cloud 
 let filesTEST = ["Anomaly.jpg","Astroworld.png","The horsemen.png","Godwhale.jpg"];
 let Canvas, img, failedLoad = false;
 let tiles = [];
+let selected = [];
 
 let slider = document.getElementById("gridSize");
 let output = document.getElementById("sliderVal");
@@ -9,16 +10,25 @@ let gridSize = slider.value;
 output.innerHTML = "Puzzle pieces: " + slider.value**2;
 
 class imageTile {
-    constructor(src, tile_X, tile_Y, tileWidth, tileHeight) {
+    constructor(src, gridX, gridY, tileWidth, tileHeight, imgX, imgY) {
         this.src = src;
         this.width = tileWidth;
         this.height = tileHeight;
-        this.x = tile_X;
-        this.y = tile_Y;
+        this.gridX = gridX;
+        this.gridY = gridY;
+        this.imgX = imgX;
+        this.imgY = imgY;
     }
     imgDraw() {
-        image(this.src, this.x, this.y, this.x + this.width, this.y + this.height, this.x, this.y, this.width, this.height)
-        rect(this.x, this.y, this.x + this.width, this.y + this.height)
+        let x = this.gridX*this.width;
+        let y = this.gridY*this.height;
+        image(this.src, x, y, x + this.width, y + this.height, this.imgX, this.imgY, this.width, this.height);
+        //tried to make dynamic box colour
+        // img.loadPixels();
+        // console.log(img.pixels[4*(this.imgX + this.imgY*img.width)])
+        // stroke(255 - img.pixels[4*(this.imgX + this.imgY*img.width)])
+        // stroke(150)
+        rect(x, y, x + this.width, y + this.height);
     }
 }
 
@@ -29,6 +39,7 @@ function setup() {
     resizeImgCanvas(img);
     imageMode(CORNERS);
     noFill();
+    strokeWeight(1)
     rectMode(CORNERS);
     textSize(32);
     textAlign(CENTER);
@@ -44,7 +55,7 @@ function draw() {
         text("Failed to load image", Canvas.width/2, Canvas.height/2);
         pop();
     }
-    else createTiles(img, gridSize)
+    else createTiles()
 }
 
 function getRandomImage(src) { 
@@ -66,29 +77,43 @@ function prepareImage() {
     img = loadImage(getRandomImage(files), img => {
         resizeImgCanvas(img);
         failedLoad = false;
-        createTiles(img, gridSize)
     }, () => {
         failedLoad = true;
     });
 }
 
-function createTiles(img, gridSize) {
+function swapTiles(tile1, tile2) {
+    console.log(tile1)
+    //Made to not let temp be a reference to tile1
+    let temp = [tile1.gridX, tile1.gridY];
+    tile1.gridX = tile2.gridX
+    tile1.gridY = tile2.gridY
+    tile2.gridX = temp[0]
+    tile2.gridY = temp[1]
+}
+
+function createTiles() {
     tiles = [];
+    //Divided into rows, purely for easier array reading
     let tempRow = [];
     let tileWidth = img.width/gridSize
     let tileHeight = img.height/gridSize
 
     for (let y = 0; y < gridSize; y++) {
         for (let x = 0; x < gridSize; x++) {
-            tiles.push(new imageTile(img, x*tileWidth, y*tileHeight, tileWidth, tileHeight))
+            tempRow.push(new imageTile(img, x, y, tileWidth, tileHeight, x*tileWidth, y*tileHeight))
         }
-        // tiles.push(tempRow)
+        tiles.push(tempRow)
+        tempRow = []
     }
-    for (i in tiles) tiles[i].imgDraw();
+    swapTiles(tiles[0][2], tiles[2][1])
+    console.log("///////////////")
+
+    tiles.forEach(v => v.forEach(tile => tile.imgDraw()))
 }
 
 newPuzzle.onclick = function() {
-    prepareImage()
+    prepareImage();
     redraw();
 }
 
@@ -96,6 +121,21 @@ slider.oninput = function() {
     output.innerHTML = "Puzzle pieces: " + this.value**2;
     gridSize = this.value;
     redraw();
+}
+
+function mousePressed() {
+    if (mouseX > 0 && mouseX < img.width && mouseY > 0 && mouseY < img.height) {
+        //Gets the grid coordinates for mouseX and Y
+        let mouseGridX = Math.floor(mouseX/(img.width/gridSize))
+        let mouseGridY = Math.floor(mouseY/(img.height/gridSize))
+        console.log(mouseGridX + "    " + mouseGridY)
+        selected.push([mouseGridY, mouseGridX])
+        if (selected.length > 1) {
+            console.log(selected)
+            swapTiles(tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]])
+            selected = []
+        }
+    }
 }
 
 // fileInput.addEventListener("input", (img) => {
