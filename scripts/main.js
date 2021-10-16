@@ -3,11 +3,16 @@ let filesTEST = ["Anomaly.jpg","Astroworld.png","The horsemen.png","Godwhale.jpg
 let Canvas, img, failedLoad = false;
 let tiles = [];
 let selected = [];
+let locked = true;
 
-let slider = document.getElementById("gridSize");
-let output = document.getElementById("sliderVal");
-let gridSize = slider.value;
-output.innerHTML = "Puzzle pieces: " + slider.value**2;
+let widthSlider = document.getElementById("gridWidth");
+let gridWidth = widthSlider.value;
+
+let heightSlider = document.getElementById("gridHeight");
+let gridHeight = heightSlider.value;
+
+let output = document.getElementById("puzzleSize");
+let sliderValues = [widthSlider.value, heightSlider.value]
 
 class imageTile {
     constructor(src, gridX, gridY, tileWidth, tileHeight, imgX, imgY) {
@@ -47,6 +52,7 @@ function setup() {
 }
 
 function draw() {
+    output.innerHTML = "Puzzle width: " + sliderValues[0] + "\t|\t|\tPuzzle height: " + sliderValues[1];
     background(150)
     if (failedLoad) {
         push();
@@ -55,7 +61,10 @@ function draw() {
         text("Failed to load image", Canvas.width/2, Canvas.height/2);
         pop();
     }
-    else createTiles()
+    else {
+        tiles.forEach(v => v.forEach(i => i.imgDraw()))
+        console.log("test")
+    }
 }
 
 function getRandomImage(src) { 
@@ -63,10 +72,10 @@ function getRandomImage(src) {
     return "./images/" + src[randomInd];
 }
 
-function resizeImgCanvas(img) {
+function resizeImgCanvas() {
     img.height *= 1.5;
     img.width *= 1.5;
-    while(img.height > innerHeight*0.85 || img.width > innerWidth*0.8) {
+    while(img.height > innerHeight*0.75 || img.width > innerWidth*0.8) {
         img.width *= 0.9;
         img.height *= 0.9;
     }
@@ -74,8 +83,12 @@ function resizeImgCanvas(img) {
 }
 
 function prepareImage() {
-    img = loadImage(getRandomImage(files), img => {
-        resizeImgCanvas(img);
+    img = loadImage(getRandomImage(files), () => {
+        //resizeImgCanvas ends up doing redraw(), but the tiles aren't created yet, so it doesn't display the image
+        //But for some reason, having createTiles() and redraw() happen in newPuzzle.onclick doesnt' work... :/
+        resizeImgCanvas();
+        createTiles();
+        redraw();
         failedLoad = false;
     }, () => {
         failedLoad = true;
@@ -83,7 +96,7 @@ function prepareImage() {
 }
 
 function swapTiles(tile1, tile2) {
-    console.log(tile1)
+    
     //Made to not let temp be a reference to tile1
     let temp = [tile1.gridX, tile1.gridY];
     tile1.gridX = tile2.gridX
@@ -96,44 +109,57 @@ function createTiles() {
     tiles = [];
     //Divided into rows, purely for easier array reading
     let tempRow = [];
-    let tileWidth = img.width/gridSize
-    let tileHeight = img.height/gridSize
+    let tileWidth = img.width/gridWidth
+    let tileHeight = img.height/gridHeight
 
-    for (let y = 0; y < gridSize; y++) {
-        for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
             tempRow.push(new imageTile(img, x, y, tileWidth, tileHeight, x*tileWidth, y*tileHeight))
         }
         tiles.push(tempRow)
         tempRow = []
     }
-    swapTiles(tiles[0][2], tiles[2][1])
-    console.log("///////////////")
-
-    tiles.forEach(v => v.forEach(tile => tile.imgDraw()))
 }
 
 newPuzzle.onclick = function() {
     prepareImage();
+}
+
+widthSlider.oninput = function() {
+    sliderValues[0] = this.value
+    gridWidth = this.value;
+    if (locked) {
+        heightSlider.value = this.value
+        sliderValues[1] = this.value
+        gridHeight = this.value;
+    }
+    createTiles();
     redraw();
 }
 
-slider.oninput = function() {
-    output.innerHTML = "Puzzle pieces: " + this.value**2;
-    gridSize = this.value;
+
+heightSlider.oninput = function() {
+    sliderValues[1] = this.value
+    gridHeight = this.value;
+    if (locked) {
+        widthSlider.value = this.value
+        sliderValues[0] = this.value
+        gridWidth = this.value;
+    }
+    createTiles();
     redraw();
 }
 
 function mousePressed() {
     if (mouseX > 0 && mouseX < img.width && mouseY > 0 && mouseY < img.height) {
         //Gets the grid coordinates for mouseX and Y
-        let mouseGridX = Math.floor(mouseX/(img.width/gridSize))
-        let mouseGridY = Math.floor(mouseY/(img.height/gridSize))
-        console.log(mouseGridX + "    " + mouseGridY)
+        let mouseGridX = Math.floor(mouseX/(img.width/gridWidth))
+        let mouseGridY = Math.floor(mouseY/(img.height/gridHeight))
         selected.push([mouseGridY, mouseGridX])
         if (selected.length > 1) {
-            console.log(selected)
             swapTiles(tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]])
             selected = []
+            redraw();
         }
     }
 }
