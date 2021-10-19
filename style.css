@@ -19,3 +19,15 @@ button:hover {
 div {
     padding: 5px;
 }
+
+#lockWidAndHei {
+    position: absolute;
+    left: 60%;
+    top: 6%;
+}
+
+#disableChanges {
+    position: absolute;
+    left: 60%;
+    top: 2%;
+}

@@ -19,6 +19,14 @@
         <div id = puzzleSize></div>
         <input type="range" min="3" max="20" value="9" id="gridWidth">
         <input type="range" min="3" max="20" value="9" id="gridHeight">
+        <div id="lockWidAndHei">
+            <input type="checkbox" id="lock" checked>
+            <label for="locked">Equal width & height</label>
+        </div>
+        <div id="disableChanges">
+            <input type="checkbox" id="disable">
+            <label for="disable">Lock the puzzle and tile amount</label>
+        </div>
         <!--<button onclick="document.getElementById('fileInput').click();">Use your own image</button>
         <input id="fileInput" type="file" style="display: none;" />
         Custom images put on hold because browser security issues are a valid concern and not worth circumventing

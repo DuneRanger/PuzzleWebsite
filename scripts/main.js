@@ -3,16 +3,15 @@ let filesTEST = ["Anomaly.jpg","Astroworld.png","The horsemen.png","Godwhale.jpg
 let Canvas, img, failedLoad = false;
 let tiles = [];
 let selected = [];
-let locked = true;
 
+let locked = document.getElementById("lock").checked;
+
+//Defined these inputs because of later manipulation outside of native functions
 let widthSlider = document.getElementById("gridWidth");
-let gridWidth = widthSlider.value;
+let gridWidth = widthSlider.valueAsNumber;
 
 let heightSlider = document.getElementById("gridHeight");
-let gridHeight = heightSlider.value;
-
-let output = document.getElementById("puzzleSize");
-let sliderValues = [widthSlider.value, heightSlider.value]
+let gridHeight = heightSlider.valueAsNumber;
 
 class imageTile {
     constructor(src, gridX, gridY, tileWidth, tileHeight, imgX, imgY) {
@@ -52,7 +51,7 @@ function setup() {
 }
 
 function draw() {
-    output.innerHTML = "Puzzle width: " + sliderValues[0] + "\t|\t|\tPuzzle height: " + sliderValues[1];
+    document.getElementById("puzzleSize").innerHTML = "Puzzle width: " + gridWidth + "\t|\t|\tPuzzle height: " + gridHeight;
     background(150)
     if (failedLoad) {
         push();
@@ -96,8 +95,10 @@ function prepareImage() {
 }
 
 function swapTiles(tile1, tile2) {
-    
-    //Made to not let temp be a reference to tile1
+    tiles[tile1.gridY][tile1.gridX] = tile2
+    tiles[tile2.gridY][tile2.gridX] = tile1
+
+    //Made to not let temp be a reference to tile1 or something else that made it not work
     let temp = [tile1.gridX, tile1.gridY];
     tile1.gridX = tile2.gridX
     tile1.gridY = tile2.gridY
@@ -125,13 +126,38 @@ newPuzzle.onclick = function() {
     prepareImage();
 }
 
+puzzleShuffle.onclick = function() {
+    for (let y = 0; y < tiles.length; y++) {
+        for (let x = 0; x < tiles[y].length; x++) {
+            let i = Math.floor(Math.random() * tiles[y].length);
+            let j = Math.floor(Math.random() * tiles.length)
+            swapTiles(tiles[y][x], tiles[j][i])
+        }
+    }
+    redraw();
+}
+
+lock.onclick = function() {
+    locked = this.checked;
+    gridHeight = gridWidth;
+    heightSlider.value = widthSlider.value;
+    createTiles();
+    redraw();
+}
+
+disable.onclick = function() {
+    let x = this.checked //A bool value
+        widthSlider.disabled = x;
+        heightSlider.disabled = x;
+        newPuzzle.disabled = x;
+        puzzleShuffle.disabled = x;
+}
+
 widthSlider.oninput = function() {
-    sliderValues[0] = this.value
-    gridWidth = this.value;
+    gridWidth = this.valueAsNumber;
     if (locked) {
-        heightSlider.value = this.value
-        sliderValues[1] = this.value
-        gridHeight = this.value;
+        heightSlider.value = this.value;
+        gridHeight = gridWidth;
     }
     createTiles();
     redraw();
@@ -139,26 +165,26 @@ widthSlider.oninput = function() {
 
 
 heightSlider.oninput = function() {
-    sliderValues[1] = this.value
-    gridHeight = this.value;
+    gridHeight = this.valueAsNumber;
     if (locked) {
-        widthSlider.value = this.value
-        sliderValues[0] = this.value
-        gridWidth = this.value;
+        widthSlider.value = this.value;
+        gridWidth = gridHeight;
     }
     createTiles();
     redraw();
 }
 
+
+//One version of selecting tiles
 function mousePressed() {
     if (mouseX > 0 && mouseX < img.width && mouseY > 0 && mouseY < img.height) {
         //Gets the grid coordinates for mouseX and Y
-        let mouseGridX = Math.floor(mouseX/(img.width/gridWidth))
-        let mouseGridY = Math.floor(mouseY/(img.height/gridHeight))
-        selected.push([mouseGridY, mouseGridX])
+        let mouseGridX = Math.floor(mouseX/(img.width/gridWidth));
+        let mouseGridY = Math.floor(mouseY/(img.height/gridHeight));
+        selected.push([mouseGridY, mouseGridX]);
         if (selected.length > 1) {
-            swapTiles(tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]])
-            selected = []
+            swapTiles(tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]]);
+            selected = [];
             redraw();
         }
     }
