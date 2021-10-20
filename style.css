@@ -31,3 +31,9 @@ div {
     left: 60%;
     top: 2%;
 }
+
+#disclaimer {
+    position: absolute;
+    left: 35%;
+    bottom: 0%;
+}

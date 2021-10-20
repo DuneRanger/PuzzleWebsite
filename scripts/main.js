@@ -1,12 +1,14 @@
 let files = ["Anomaly.jpg","Arctic fox.png","Astroworld.png","Ayaka.png","Cloud beast.png","Detailed1.jpg","Detailed2.jpg","Detailed3.jpg","Fallen Titan.png","Fireflies.jpg","Forest temple.jpg","Godwhale.jpg","Goldenwalk.jpg","Jungle Harbour.jpg","life death.jpg","lonely cruise.jpg","Misty forest.jpg","Mushroom Tree.jpg","Neon Samurai.jpg","North pole.jpg","Odyssey.jpg","Paranoid.jpg","Planet V_02.jpg","Portal.jpg","Portal.png","RDR2.jpg","Relaxing life.jpg","River side.jpg","Shores of Space.jpg","Soaring Roots.jpg","Supertree city.jpg","The horsemen.png","The journey of Elaina.jpg","The Mystery.jpg","Tree of Life.jpg","Twinflame.png","Void under rule.jpg","Winter wolf.png","Winter.png","Yaksha.png"];
-let filesTEST = ["Anomaly.jpg","Astroworld.png","The horsemen.png","Godwhale.jpg"];
+let filesTEST = ["Anomaly.jpg","Astroworld.png","The horsemen.png","Godwhale.jpg", "Detailed1.jpg"];
 let Canvas, img, failedLoad = false;
 let tiles = [];
 let selected = [];
+let highRes = false;
 
 let locked = document.getElementById("lock").checked;
 
 //Defined these inputs because of later manipulation outside of native functions
+//Honestly need to double check if I even need to define them, maybe just a rename would do
 let widthSlider = document.getElementById("gridWidth");
 let gridWidth = widthSlider.valueAsNumber;
 
@@ -24,6 +26,23 @@ class imageTile {
         this.imgY = imgY;
     }
     imgDraw() {
+        if (selected.length) {
+            if (selected[0][0] == this.gridY && selected[0][1] == this.gridX) {
+                push();
+                let x = this.gridX*this.width;
+                let y = this.gridY*this.height;
+                imageMode(CENTER)
+                fill(150)
+                noStroke();
+                rect(x+1, y+1, x + this.width-1, y + this.height-1);
+                x = max(min(mouseX, Canvas.width), 0)
+                y = max(min(mouseY, Canvas.height), 0)
+                image(this.src, x, y, this.width, this.height, this.imgX, this.imgY, this.width, this.height)
+                pop();
+                return
+            }
+        }
+        imageMode(CORNERS)
         let x = this.gridX*this.width;
         let y = this.gridY*this.height;
         image(this.src, x, y, x + this.width, y + this.height, this.imgX, this.imgY, this.width, this.height);
@@ -43,7 +62,7 @@ function setup() {
     resizeImgCanvas(img);
     imageMode(CORNERS);
     noFill();
-    strokeWeight(1)
+    strokeWeight(0.2)
     rectMode(CORNERS);
     textSize(32);
     textAlign(CENTER);
@@ -62,7 +81,6 @@ function draw() {
     }
     else {
         tiles.forEach(v => v.forEach(i => i.imgDraw()))
-        console.log("test")
     }
 }
 
@@ -72,11 +90,16 @@ function getRandomImage(src) {
 }
 
 function resizeImgCanvas() {
+    if (img.height+img.width > 5000) {
+        highRes = true;
+        frameRate(5)
+    }
+    else highRes = false;
     img.height *= 1.5;
     img.width *= 1.5;
-    while(img.height > innerHeight*0.75 || img.width > innerWidth*0.8) {
-        img.width *= 0.9;
-        img.height *= 0.9;
+    while(img.height > innerHeight*0.8 || img.width > innerWidth*0.9) {
+        img.width *= 0.95;
+        img.height *= 0.95;
     }
     resizeCanvas(img.width, img.height);
 }
@@ -104,6 +127,9 @@ function swapTiles(tile1, tile2) {
     tile1.gridY = tile2.gridY
     tile2.gridX = temp[0]
     tile2.gridY = temp[1]
+
+    tile1.imgDraw();
+    tile2.imgDraw();
 }
 
 function createTiles() {
@@ -174,6 +200,14 @@ heightSlider.oninput = function() {
     redraw();
 }
 
+//Is there really a need for this? Probably no. Does it atleast work and barely increase performance? Hopefully.
+function redrawProximity(tile) {
+    let maximums = [tiles[0].length, tiles.length]
+    for (let y = max(tile.gridY-1, 0); y < min(tile.gridY+2, maximums[1]); y++) {
+        for (let x = max(tile.gridX-1, 0); x < min(tile.gridX+2, maximums[0]); x++)
+        tiles[y][x].imgDraw();
+    }
+}
 
 //One version of selecting tiles
 function mousePressed() {
@@ -183,12 +217,30 @@ function mousePressed() {
         let mouseGridY = Math.floor(mouseY/(img.height/gridHeight));
         selected.push([mouseGridY, mouseGridX]);
         if (selected.length > 1) {
-            swapTiles(tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]]);
+            let temp = [tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]]]
+            swapTiles(temp[0], temp[1]);
             selected = [];
-            redraw();
+            if (highRes) {
+                redrawProximity(temp[0]);
+                redrawProximity(temp[1]);
+            }
+            else redraw();
         }
     }
 }
+
+function mouseMoved() {
+    if (selected.length) {
+        let x = max(min(mouseX, Canvas.width)-1, 0)
+        let y = max(min(mouseY, Canvas.height)-1, 0)
+        let mouseGridX = Math.floor(x/(img.width/gridWidth));
+        let mouseGridY = Math.floor(y/(img.height/gridHeight));
+        if (highRes) redrawProximity(tiles[mouseGridY][mouseGridX]);
+        else redraw();
+        tiles[selected[0][0]][selected[0][1]].imgDraw();
+    }
+}
+
 
 // fileInput.addEventListener("input", (img) => {
     // img = loadImage(img.target.files[0].path, img => {

@@ -4,8 +4,4 @@
  The user can click on 2 tiles to swap then
 
 # TODO
- Shuffle function, to, you know... actually shuffle the puzzle pieces
- Make the swap function into a drag and drop version
-    (Maybe make a toggleable switch??)
- A checkbox for locking and unlocking tile amount
-   (The hardest part is finding a good position)
+ THE GODDAMN VICTORY MESSAGE. HOW HAVE I STILL NOT DONE IT
