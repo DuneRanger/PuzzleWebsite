@@ -4,4 +4,5 @@
  The user can click on 2 tiles to swap then
 
 # TODO
- THE GODDAMN VICTORY MESSAGE. HOW HAVE I STILL NOT DONE IT
+ Averaging colours and stuffs for QOL
+ Shift all up, down, left, right

@@ -4,6 +4,7 @@ let Canvas, img, failedLoad = false;
 let tiles = [];
 let selected = [];
 let highRes = false;
+let shuffled = false;
 
 let locked = document.getElementById("lock").checked;
 
@@ -24,6 +25,8 @@ class imageTile {
         this.gridY = gridY;
         this.imgX = imgX;
         this.imgY = imgY;
+        this.origX = this.gridX;
+        this.origY = this.gridY;
     }
     imgDraw() {
         if (selected.length) {
@@ -33,7 +36,7 @@ class imageTile {
                 let y = this.gridY*this.height;
                 imageMode(CENTER)
                 fill(150)
-                noStroke();
+                stroke(255);
                 rect(x+1, y+1, x + this.width-1, y + this.height-1);
                 x = max(min(mouseX, Canvas.width), 0)
                 y = max(min(mouseY, Canvas.height), 0)
@@ -81,7 +84,14 @@ function draw() {
     }
     else {
         tiles.forEach(v => v.forEach(i => i.imgDraw()))
+        // console.log(tiles[0])
+        // tiles.forEach(v => v.forEach(t => console.log((t.imgX))))
     }
+    if (shuffled) {
+        if (tiles.every(v => v.every(i => i.origX == i.gridX && i.origY == i.gridY))) {
+            victoryScreen();
+        }
+    } 
 }
 
 function getRandomImage(src) { 
@@ -92,7 +102,6 @@ function getRandomImage(src) {
 function resizeImgCanvas() {
     if (img.height+img.width > 5000) {
         highRes = true;
-        frameRate(5)
     }
     else highRes = false;
     img.height *= 1.5;
@@ -105,6 +114,7 @@ function resizeImgCanvas() {
 }
 
 function prepareImage() {
+    selected = [];
     img = loadImage(getRandomImage(files), () => {
         //resizeImgCanvas ends up doing redraw(), but the tiles aren't created yet, so it doesn't display the image
         //But for some reason, having createTiles() and redraw() happen in newPuzzle.onclick doesnt' work... :/
@@ -117,23 +127,31 @@ function prepareImage() {
     });
 }
 
+function victoryScreen() {
+    push();
+    textSize(img.width/12);
+    fill("brown");
+    rect
+    text("Congrats! You did it!", Canvas.width/2, Canvas.height/2);
+    pop();
+}
+
 function swapTiles(tile1, tile2) {
-    tiles[tile1.gridY][tile1.gridX] = tile2
-    tiles[tile2.gridY][tile2.gridX] = tile1
+    tiles[tile1.gridY][tile1.gridX] = tile2;
+    tiles[tile2.gridY][tile2.gridX] = tile1;
 
     //Made to not let temp be a reference to tile1 or something else that made it not work
     let temp = [tile1.gridX, tile1.gridY];
-    tile1.gridX = tile2.gridX
-    tile1.gridY = tile2.gridY
-    tile2.gridX = temp[0]
-    tile2.gridY = temp[1]
-
-    tile1.imgDraw();
-    tile2.imgDraw();
+    tile1.gridX = tile2.gridX;
+    tile1.gridY = tile2.gridY;
+    tile2.gridX = temp[0];
+    tile2.gridY = temp[1];
 }
 
 function createTiles() {
     tiles = [];
+    shuffled = false;
+    solved = false;
     //Divided into rows, purely for easier array reading
     let tempRow = [];
     let tileWidth = img.width/gridWidth
@@ -160,6 +178,7 @@ puzzleShuffle.onclick = function() {
             swapTiles(tiles[y][x], tiles[j][i])
         }
     }
+    shuffled = true;
     redraw();
 }
 
@@ -201,11 +220,16 @@ heightSlider.oninput = function() {
 }
 
 //Is there really a need for this? Probably no. Does it atleast work and barely increase performance? Hopefully.
+//Ok, this geuniunely helps for puzzles with a lot of tiles, just needed to make adjustments, so that it isn't that easy to break
+//But high res pictures still break, when each tile has a shit ton of pixels
 function redrawProximity(tile) {
     let maximums = [tiles[0].length, tiles.length]
-    for (let y = max(tile.gridY-1, 0); y < min(tile.gridY+2, maximums[1]); y++) {
-        for (let x = max(tile.gridX-1, 0); x < min(tile.gridX+2, maximums[0]); x++)
-        tiles[y][x].imgDraw();
+    let bound = [ceil(gridHeight/8), ceil(gridWidth/8)]
+    if (highRes) {bound[0] = 1; bound[1] = 1}
+    for (let y = max(tile.gridY-bound[0], 0); y < min(tile.gridY+1+bound[0], maximums[1]); y++) {
+        for (let x = max(tile.gridX-bound[1], 0); x < min(tile.gridX+1+bound[1], maximums[0]); x++) {
+            tiles[y][x].imgDraw();
+        }
     }
 }
 
@@ -220,11 +244,7 @@ function mousePressed() {
             let temp = [tiles[selected[0][0]][selected[0][1]], tiles[selected[1][0]][selected[1][1]]]
             swapTiles(temp[0], temp[1]);
             selected = [];
-            if (highRes) {
-                redrawProximity(temp[0]);
-                redrawProximity(temp[1]);
-            }
-            else redraw();
+            redraw();
         }
     }
 }
@@ -235,8 +255,7 @@ function mouseMoved() {
         let y = max(min(mouseY, Canvas.height)-1, 0)
         let mouseGridX = Math.floor(x/(img.width/gridWidth));
         let mouseGridY = Math.floor(y/(img.height/gridHeight));
-        if (highRes) redrawProximity(tiles[mouseGridY][mouseGridX]);
-        else redraw();
+        redrawProximity(tiles[mouseGridY][mouseGridX]);
         tiles[selected[0][0]][selected[0][1]].imgDraw();
     }
 }
