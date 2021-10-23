@@ -65,7 +65,7 @@ function setup() {
     resizeImgCanvas(img);
     imageMode(CORNERS);
     noFill();
-    strokeWeight(0.2)
+    strokeWeight(0.1)
     rectMode(CORNERS);
     textSize(32);
     textAlign(CENTER);
@@ -164,6 +164,34 @@ function createTiles() {
         tiles.push(tempRow)
         tempRow = []
     }
+}
+
+shiftUp.onclick = function() {
+    for (let i = 1; i < tiles.length; i++) {
+        tiles[i].forEach((v, ind) => swapTiles(v, tiles[i-1][ind]))
+    }
+    redraw();
+}
+
+shiftDown.onclick = function() {
+    for (let i = tiles.length-1; i > 0; i--) {
+        tiles[i].forEach((v, ind) => swapTiles(v, tiles[i-1][ind]))
+    }
+    redraw();
+}
+
+shiftLeft.onclick = function() {
+    for (let i = 1; i < tiles.length; i++) {
+        tiles.forEach((v, ind) => swapTiles(v[i], tiles[ind][i-1]))
+    }
+    redraw();
+}
+
+shiftRight.onclick = function() {
+    for (let i = tiles.length-1; i > 0; i--) {
+        tiles.forEach((v, ind) => swapTiles(v[i], tiles[ind][i-1]))
+    }
+    redraw();
 }
 
 newPuzzle.onclick = function() {

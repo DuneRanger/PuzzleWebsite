@@ -5,4 +5,3 @@
 
 # TODO
  Averaging colours and stuffs for QOL
- Shift all up, down, left, right

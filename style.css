@@ -37,3 +37,27 @@ div {
     left: 35%;
     bottom: 0%;
 }
+
+#shiftUp {
+    position: absolute;
+    left: 12%;
+    top: 2%;
+}
+
+#shiftDown {
+    position: absolute;
+    left: 11.3%;
+    top: 6%;
+}
+
+#shiftLeft {
+    position: absolute;
+    left: 2%;
+    top: 4%;
+}
+
+#shiftRight {
+    position: absolute;
+    left: 21.8%;
+    top: 4%;
+}
