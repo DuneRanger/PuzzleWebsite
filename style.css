@@ -32,12 +32,6 @@ div {
     top: 2%;
 }
 
-#disclaimer {
-    position: absolute;
-    left: 35%;
-    bottom: 0%;
-}
-
 #shiftUp {
     position: absolute;
     left: 12%;
@@ -52,12 +46,18 @@ div {
 
 #shiftLeft {
     position: absolute;
-    left: 2%;
+    left: 4%;
     top: 4%;
 }
 
 #shiftRight {
     position: absolute;
-    left: 21.8%;
+    left: 19.8%;
     top: 4%;
+}
+
+#showBoxes {
+    position: absolute;
+    left: 4%;
+    top: 12%;
 }

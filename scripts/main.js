@@ -5,6 +5,7 @@ let tiles = [];
 let selected = [];
 let highRes = false;
 let shuffled = false;
+let toggleBoxes = false;
 
 let locked = document.getElementById("lock").checked;
 
@@ -54,7 +55,7 @@ class imageTile {
         // console.log(img.pixels[4*(this.imgX + this.imgY*img.width)])
         // stroke(255 - img.pixels[4*(this.imgX + this.imgY*img.width)])
         // stroke(150)
-        rect(x, y, x + this.width, y + this.height);
+        if (toggleBoxes) rect(x, y, x + this.width, y + this.height);
     }
 }
 
@@ -104,9 +105,10 @@ function resizeImgCanvas() {
         highRes = true;
     }
     else highRes = false;
+    let heightIncrease = max(1, img.height/img.width)
     img.height *= 1.5;
     img.width *= 1.5;
-    while(img.height > innerHeight*0.8 || img.width > innerWidth*0.9) {
+    while(img.height > heightIncrease*innerHeight*0.77 || img.width > innerWidth*0.9) {
         img.width *= 0.95;
         img.height *= 0.95;
     }
@@ -164,6 +166,11 @@ function createTiles() {
         tiles.push(tempRow)
         tempRow = []
     }
+}
+
+showBoxes.onclick = function() {
+    toggleBoxes = !toggleBoxes;
+    redraw();
 }
 
 shiftUp.onclick = function() {

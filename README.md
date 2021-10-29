@@ -5,3 +5,7 @@
 
 # TODO
  Averaging colours and stuffs for QOL
+ A multi select or lock group or smth for easier multi-tile manipulation
+ Improve css and html element position
+    So you know, you can zoom in and stuff
+ Also, fix the annoying thing with the boxes. Already know the cause, but can't think of a solution
