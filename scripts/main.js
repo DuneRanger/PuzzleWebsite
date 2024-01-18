@@ -133,7 +133,6 @@ function victoryScreen() {
     push();
     textSize(img.width/12);
     fill("brown");
-    rect
     text("Congrats! You did it!", Canvas.width/2, Canvas.height/2);
     pop();
 }
